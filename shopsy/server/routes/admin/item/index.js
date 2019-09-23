@@ -25,11 +25,7 @@ module.exports = (config) => {
   });
 
   // Save or update item
-  router.post('/', async (req, res, next) => {
-    return next('Not implemented');
-
-    /*
-
+  router.post('/', async (req, res) => {
     // Massage the passed in form data a bit
     const sku = req.body.sku.trim();
     const name = req.body.name.trim();
@@ -69,14 +65,10 @@ module.exports = (config) => {
       log.fatal(err);
       return res.redirect('/admin/item');
     }
-    */
   });
 
   // Delete item
-  router.get('/delete/:itemId', async (req, res, next) => {
-    return next('Not implemented');
-
-    /*
+  router.get('/delete/:itemId', async (req, res) => {
     try {
       const deleteResult = await itemService.remove({ _id: req.params.itemId });
       if (deleteResult === 0) {
@@ -97,7 +89,6 @@ module.exports = (config) => {
       text: 'The item was successfully deleted!',
     });
     return res.redirect('/admin/item');
-    */
   });
   return router;
 };
