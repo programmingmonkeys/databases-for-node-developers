@@ -1,15 +1,9 @@
 // request is a module that makes http calls easier
 const request = require('request')
 
-const MongoClient = require('mongodb')
+const MongoClient = require('mongodb', { useNewUrlParser: true })
 
-const dsn = 'mongodb://localhost:37017/maxcoin'
-
-MongoClient.connect(dsn, (err, db) => {
-    if (err) throw err
-    console.log('Connected successfully to MongoDB server')
-    db.close()
-})
+const dsn = 'mongodb://localhost:27017/maxcoin'
 
 // Generic function that fetches the closing bitcoin dates of the last month from a public API
 function fetchFromAPI(callback) {
@@ -21,7 +15,37 @@ function fetchFromAPI(callback) {
     });
 }
 
-fetchFromAPI((err, data) => {
+function insertMongpDB(collection, data) {
+    const promisedInserts = []
+
+    Object.keys(data).forEach((key) => {
+        promisedInserts.push(
+            collection.insertOne({
+                date: key,
+                value: data[key]
+            })
+        )
+    })
+
+    return Promise.all(promisedInserts)
+}
+
+MongoClient.connect(dsn, (err, db) => {
+    console.time('mongodb')
     if (err) throw err
-    console.log(data)
-});
+    console.log('Connected successfully to MongoDB server')
+    fetchFromAPI((err, data) => {
+        if (err) throw err
+        const collection = db.db('maxcoin').collection('value') // const collection = db.collection('value') // commented out doesn't work
+
+        insertMongpDB(collection, data.bpi)
+        .then((result) => {
+            console.log(`Successful inserted ${result.length} documents into mongodb`)
+            db.close()    
+        })
+        .catch((err) => {
+            console.log(err)
+            process.exit()
+        })
+    })
+})
