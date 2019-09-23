@@ -1,7 +1,7 @@
 // request is a module that makes http calls easier
 const request = require('request')
 
-const MongoClient = require('mongodb', { useNewUrlParser: true })
+const MongoClient = require('mongodb')
 
 const dsn = 'mongodb://localhost:27017/maxcoin'
 
@@ -30,7 +30,7 @@ function insertMongpDB(collection, data) {
     return Promise.all(promisedInserts)
 }
 
-MongoClient.connect(dsn, (err, db) => {
+MongoClient.connect(dsn, { useNewUrlParser: true, useUnifiedTopology: true }, (err, db) => {
     console.time('mongodb')
     if (err) throw err
     console.log('Connected successfully to MongoDB server')
@@ -41,7 +41,14 @@ MongoClient.connect(dsn, (err, db) => {
         insertMongpDB(collection, data.bpi)
         .then((result) => {
             console.log(`Successful inserted ${result.length} documents into mongodb`)
-            db.close()    
+
+            const options = { 'sort': [['value', 'desc']] }
+            collection.findOne({}, options, (err, doc) => {
+                if (err) throw err
+                console.log(`MongoDB: The one month max calue is ${doc.value} and it was reached on ${doc.date}`)
+                console.timeEnd('mongodb')
+                db.close()
+            })
         })
         .catch((err) => {
             console.log(err)
