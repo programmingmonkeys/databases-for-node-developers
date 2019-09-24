@@ -9,6 +9,7 @@
   "author": "codingChewie",
   "dependencies": {
     "mongodb": "^3.3.2",
+    "redis": "^2.8.0",
     "request": "^2.83.0"
   }
 }
